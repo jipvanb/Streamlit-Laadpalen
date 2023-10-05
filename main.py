@@ -1,8 +1,8 @@
 import requests
 import pandas as pd
 import numpy as np
+import plotly.express as px
 import matplotlib.pyplot as plt
-import seaborn as sns
 import streamlit as st
 
 # load data
