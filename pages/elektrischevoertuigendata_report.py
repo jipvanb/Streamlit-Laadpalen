@@ -11,7 +11,7 @@ voertuigen = pd.read_csv('elektrischeVoertuigen.csv')
 
 report = ProfileReport(voertuigen, title='Elektrische voertuigen data report')
 
-
+# Cache expensive functions
 @st.cache_data(experimental_allow_widgets=True)
 def createProfileReport(_report):
     return st_profile_report(_report)
