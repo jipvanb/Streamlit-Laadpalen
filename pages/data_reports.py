@@ -8,20 +8,22 @@ from main import laadpaaldata, voertuigen
 # Init page - Streamlit pages
 add_page_title()
 
-# Data cleaning
-laadpaaldata['Started'] = pd.to_datetime(laadpaaldata['Started'], format='%Y-%m-%d %H:%M:%S', errors='coerce')
-laadpaaldata['Ended'] = pd.to_datetime(laadpaaldata['Ended'], format='%Y-%m-%d %H:%M:%S', errors='coerce')
-laadpaaldata.dropna(subset=['Started'], inplace=True)
-laadpaaldata.dropna(subset=['Ended'], inplace=True)
 
 # Initialize reports
 report_1 = ProfileReport(laadpaaldata, title='Laadpaal Data Report')
-report = ProfileReport(voertuigen, title='Elektrische voertuigen data report')
+report_2 = ProfileReport(voertuigen, title='Elektrische voertuigen data report')
 
 # Cache expensive functions
 @st.cache_data(experimental_allow_widgets=True)
-def createProfileReport(_report):
-    return st_profile_report(_report)
+def createProfileReport(option):
+    if option == 'Laadpaal':
+        report = report_1
+    else:
+        report = report_2
+    return st_profile_report(report)
+
+option = st.selectbox('Kies een dataset...', ('Laadpaal', 'Elektrische voertuigen'))
 
 # Call (cached) function to diplay profile report
-createProfileReport(report_1)
+createProfileReport(option)
+

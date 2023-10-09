@@ -4,17 +4,9 @@ import numpy as np
 import plotly.express as px
 import matplotlib.pyplot as plt
 import streamlit as st
-from st_pages import Page, Section, show_pages, add_page_title
+from st_pages import Page, show_pages, add_page_title
 
 add_page_title()
-show_pages(
-    [
-        Page('main.py', 'Home'),
-        Page('pages/data_reports.py', 'Laadpaal data report')
-    ]
-)
-
-
 # load data
 laadpaaldata = pd.read_csv('laadpaaldata.csv')
 voertuigen = pd.read_csv('elektrischeVoertuigen.csv')
@@ -35,3 +27,10 @@ laadpaaldata.dropna(subset=['Ended'], inplace=True)
 # TODO drop unnecessary columns
 
 # TODO merge data
+
+show_pages(
+    [
+        Page('main.py', 'Home'),
+        Page('pages/data_reports.py', 'Data Reports')
+    ]
+)
