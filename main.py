@@ -10,9 +10,7 @@ add_page_title()
 show_pages(
     [
         Page('main.py', 'Home'),
-        Section('Data Reports'),
-        Page('pages/laadpaaldata_report.py', 'Laadpaal data report'),
-        Page('pages/elektrischevoertuigendata_report.py', 'Elektrische Voertuigen data report')
+        Page('pages/data_reports.py', 'Laadpaal data report')
     ]
 )
 
