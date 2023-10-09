@@ -4,6 +4,5 @@ numpy
 plotly~=5.9.0
 matplotlib~=3.7.1
 streamlit~=1.27.2
-st-pages
 ydata_profiling
 streamlit_pandas_profiling
