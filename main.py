@@ -29,3 +29,6 @@ laadpaaldata['Ended'] = pd.to_datetime(laadpaaldata['Ended'], format='%Y-%m-%d %
 # TODO drop unnecessary columns
 
 # TODO merge data
+
+# Streamlit code
+
