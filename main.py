@@ -1,4 +1,5 @@
 import time
+import math
 import streamlit as st
 import requests
 import pandas as pd
@@ -104,6 +105,20 @@ hours_conn, minutes_conn = divmod(connected_time, 60)
 consumption = filtered_data['TotalEnergy'].sum()
 avg_eff = filtered_data['Efficiency'].mean()
 
+# Compute value to kWh or MWh based on the consumption
+def compute_kW(kW):
+    if kW >= 0:
+        if math.floor(math.log10(abs(kW))) >= 3:
+            return f" {round((kW / 1000), 2)} MWh"
+        else:
+            return f" {round(kW, 2)} kWh"
+    else:
+        if math.floor(math.log10(abs(kW))) >= 3:
+            return f" {round((kW / 1000), 2)} MWh"
+        else:
+            return f" {round(kW, 2)} kWh"
+
+
 metric1.metric(
     label='Gem. Laadtijd',
     value=f" {int(hours_charge)} uur {int(minutes_charge)} min",
@@ -119,12 +134,12 @@ metric2.metric(
 metric3.metric(
     label='Gem. Efficientie',
     value=f"{round(avg_eff, 2)} %",
-    delta=round(avg_eff - st.session_state['efficiency'], 2)
+    delta=f"{round(avg_eff - st.session_state['efficiency'], 2)}%"
 )
 metric4.metric(
-    label='Gem. Verbruik (kWh)',
-    value=f" {round(consumption, 2)} kWh",
-    delta=round(consumption - st.session_state['consumption'], 2)
+    label='Totaal Opgeladen',
+    value=compute_kW(consumption),
+    delta=compute_kW((consumption - st.session_state['consumption']))
 )
 # Container 3: Charts
 print(laadpaaldata)
@@ -165,15 +180,6 @@ st.session_state['charge_minutes'] = minutes_charge
 st.session_state['conn_hours'] = hours_conn
 st.session_state['conn_minutes'] = minutes_conn
 
-
-
-
-
-
-
-
-
- 
 auto_brandstof = pd.read_csv("auto_brandstof.csv")
 
 auto_brandstof = auto_brandstof.rename(columns={'Datum eerste toelating DT': 'toelating_datum',
@@ -201,3 +207,4 @@ st.plotly_chart(fig)
 
 #barchart auto brandstof per merk
 #komt er nog
+
