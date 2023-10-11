@@ -6,3 +6,5 @@ matplotlib~=3.7.1
 streamlit~=1.27.2
 ydata_profiling
 streamlit_pandas_profiling
+folium
+streamlit_folium
