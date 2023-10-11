@@ -164,3 +164,40 @@ st.session_state['charge_hours'] = hours_charge
 st.session_state['charge_minutes'] = minutes_charge
 st.session_state['conn_hours'] = hours_conn
 st.session_state['conn_minutes'] = minutes_conn
+
+
+
+
+
+
+
+
+
+ 
+auto_brandstof = pd.read_csv("auto_brandstof.csv")
+
+auto_brandstof = auto_brandstof.rename(columns={'Datum eerste toelating DT': 'toelating_datum',
+                        'Vervaldatum APK DT': 'apk_datum',
+                        'Brandstof omschrijving': 'brandstof'})
+
+# print(df.isnull().sum())
+auto_brandstof = auto_brandstof.dropna(axis=0)
+
+auto_brandstof['apk_datum'] = pd.to_datetime(auto_brandstof['apk_datum'])
+auto_brandstof['toelating_datum'] = pd.to_datetime(auto_brandstof['toelating_datum'])
+
+auto_brandstof['apk_datum'] = auto_brandstof['apk_datum'].dt.strftime('%Y-%m')
+auto_brandstof['toelating_datum'] = auto_brandstof['toelating_datum'].dt.strftime('%Y')
+
+# Groepeer de gegevens op 'brandstof' en 'toelating_datum' en bereken de som
+result_auto_brandstof = auto_brandstof.groupby(['brandstof', 'toelating_datum']).size().reset_index()
+result_auto_brandstof = result_auto_brandstof.rename(columns={0:'aantal_auto'})
+
+st.header('Aantallen auto per brandstof per jaar')
+fig = px.line(result_auto_brandstof, x="toelating_datum", y='aantal_auto', title='Aantallen auto per brandstof per jaar', color='brandstof')
+fig.update_xaxes(title_text='Toelating Datum')
+fig.update_yaxes(title_text='Aantal auto')
+st.plotly_chart(fig)
+
+#barchart auto brandstof per merk
+#komt er nog
