@@ -200,4 +200,39 @@ fig.update_yaxes(title_text='Aantal auto')
 st.plotly_chart(fig)
 
 #barchart auto brandstof per merk
-#komt er nog
+result_auto_merk_brandstof = auto_brandstof.groupby(['Merk','brandstof', 'toelating_datum']).size().reset_index()
+result_auto_merk_brandstof = result_auto_merk_brandstof.rename(columns={0:'aantal_auto'})
+
+
+# fig = px.bar(result_auto_merk_brandstof, x='Merk', y='aantal_auto', title='Totaal aantal auto\'s per merk', 
+#              color = 'brandstof')
+# # fig.update_xaxes(categoryorder='total ascending')  # Sorteer x-as op basis van het totale aantal auto's
+# fig.update_layout(
+#     xaxis_title='Auto merk',
+#     yaxis_title='Aantal auto',
+#     title='Brandstofverbruik per categorie'
+# )
+# st.plotly_chart(fig)
+
+
+st.header("Jaar Filter")
+result_auto_merk_brandstof['toelating_datum'] = result_auto_merk_brandstof['toelating_datum'].astype('int')
+year_range = st.slider("Selecteer een jaarbereik", 
+                               min_value=result_auto_merk_brandstof['toelating_datum'].min(), 
+                               max_value=result_auto_merk_brandstof['toelating_datum'].max(), 
+                               value=(result_auto_merk_brandstof['toelating_datum'].min(), 
+                                      result_auto_merk_brandstof['toelating_datum'].max()))
+
+# Filter de dataset op basis van geselecteerde jaren
+result_auto_merk_brandstof = result_auto_merk_brandstof[(result_auto_merk_brandstof['toelating_datum'] >= year_range[0]) & 
+                                                        (result_auto_merk_brandstof['toelating_datum'] <= year_range[1])]
+
+fig = px.bar(result_auto_merk_brandstof, x='Merk', y='aantal_auto', color='brandstof',
+             category_orders={'brandstof': ['Benzine', 'Diesek', 'Elektriciteit', 'Waterstof']})
+
+fig.update_layout(
+    xaxis_title='Auto merk',
+    yaxis_title='Aantal auto',
+    title='Brandstofverbruik per auto merk'
+)
+st.plotly_chart(fig)
