@@ -110,7 +110,9 @@ avg_eff = filtered_data['Efficiency'].mean()
 
 # Compute value to kWh or MWh based on the consumption
 def compute_kW(kW):
-    if kW >= 0:
+    if kW == 0:
+        return f" { 0.0 } MWh"
+    elif kW > 0:
         if math.floor(math.log10(abs(kW))) >= 3:
             return f" {round((kW / 1000), 2)} MWh"
         else:
