@@ -45,6 +45,9 @@ laadpaaldata['Started'] = pd.to_datetime(laadpaaldata['Started'], format='%Y-%m-
 laadpaaldata['Ended'] = pd.to_datetime(laadpaaldata['Ended'], format='%Y-%m-%d %H:%M:%S', errors='coerce')
 laadpaaldata.dropna(subset=['Started'], inplace=True)
 laadpaaldata.dropna(subset=['Ended'], inplace=True)
+chargemapcolumns = ['NumberOfPoints', 'AddressInfo.Latitude', 'AddressInfo.Longitude', 'ConnectionTypeID', 'LevelID', 'Amps', 'Voltage', 'PowerKW', 'CurrentTypeID', 'Quantity']
+openchargemap = openchargemap[chargemapcolumns]
+openchargemap.rename(columns={'AddressInfo.Latitude': 'Latitude', 'AddressInfo.Longitude': 'Longitude'}, inplace=True)
 
 # Drop rows with negative charging times
 rows_to_drop = laadpaaldata[((laadpaaldata['ChargeTime']) <= 0.166)].index
@@ -169,9 +172,8 @@ fig_scat2.update_layout(
 )
 st.plotly_chart(fig_scat2)
 
-
-
-
+PowerKwBox = px.box(openchargemap, y='PowerKW', title='Power KW Distribution')
+st.plotly_chart(PowerKwBox)
 
 st.session_state['efficiency'] = avg_eff
 st.session_state['consumption'] = consumption
