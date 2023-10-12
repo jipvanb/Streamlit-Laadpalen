@@ -241,18 +241,14 @@ with fig_col6:
 
 fig_col7, fig_col8 = st.columns(2)
 with fig_col7:
-    brandstof = {'Benzine': 0, 'Diesel': 1, 'Elektriciteit': 2, 'Waterstof': 3}
-    result_auto_brandstof['brandstof'] = result_auto_brandstof['brandstof'].map(brandstof)
-    voorspeel_df = result_auto_brandstof[result_auto_brandstof['brandstof'] == 2]
+    voorspeel_df = pd.get_dummies(result_auto_brandstof, columns=['brandstof'], prefix='brandstof', drop_first=False)
+    voorspeel_df = voorspeel_df.drop(['brandstof_Benzine', 'brandstof_Diesel', 'brandstof_Waterstof'], axis=1)
+    voorspeel_df = voorspeel_df[voorspeel_df['brandstof_Elektriciteit'] == 1]
+    voorspeel_df['brandstof_Elektriciteit'] = voorspeel_df['brandstof_Elektriciteit'].astype(int)
+    voorspeel_df['toelating_datum'] = voorspeel_df['toelating_datum'].astype(int)
     Y = voorspeel_df['aantal_auto']
-    X = voorspeel_df[['toelating_datum', 'brandstof']] 
-
-    #voorspeel_df = pd.get_dummies(result_auto_brandstof, columns=['brandstof'], prefix='brandstof', drop_first=False)
-    #voorspeel_df = voorspeel_df.drop(['brandstof_Benzine', 'brandstof_Diesel', 'brandstof_Waterstof'], axis=1)
-    #voorspeel_df = voorspeel_df[voorspeel_df['brandstof_Elektriciteit'] == 1]
-    #Y = voorspeel_df['aantal_auto']
-    #X = voorspeel_df[['toelating_datum', 'brandstof_Elektriciteit']]
-    # X['brandstof_Elektriciteit'] = X['brandstof_Elektriciteit'].apply(lambda x: int(x))
+    X = voorspeel_df[['toelating_datum', 'brandstof_Elektriciteit']]
+    
     X = sm.add_constant(X) # adding a constant
     model = sm.OLS(Y, X).fit()
     predictions = model.predict(X)
@@ -278,7 +274,7 @@ with fig_col7:
 with fig_col8:
     toelating_datum_to_predict = list(range(2024, 2045))  # Jaren 2024 t/m 2044
     future_data = pd.DataFrame({'toelating_datum': toelating_datum_to_predict})
-    future_data['brandstof'] = 2
+    future_data['brandstof_Elektriciteit'] = 1
     future_data = sm.add_constant(future_data)
     predicted_values = model.predict(future_data)
     future_df = pd.DataFrame({'Toekomstige_Datum': toelating_datum_to_predict, 'Voorspelde_Aantal_Auto': predicted_values})
