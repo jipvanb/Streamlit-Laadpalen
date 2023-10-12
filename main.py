@@ -217,90 +217,69 @@ with fig_col5:
 
 with fig_col6:
     st.markdown("### Voorspelling elektrische auto's")
+    # barchart auto brandstof per merk
+    result_auto_merk_brandstof = auto_brandstof.groupby(['Merk', 'brandstof', 'toelating_datum']).size().reset_index()
+    result_auto_merk_brandstof = result_auto_merk_brandstof.rename(columns={0: 'aantal_auto'})
+    result_auto_merk_brandstof['toelating_datum'] = result_auto_merk_brandstof['toelating_datum'].astype('int')
+    # slider
+    year_range = st.slider("Selecteer een jaarbereik",
+                           min_value=result_auto_merk_brandstof['toelating_datum'].min(),
+                           max_value=result_auto_merk_brandstof['toelating_datum'].max(),
+                           value=(result_auto_merk_brandstof['toelating_datum'].min(),
+                                  result_auto_merk_brandstof['toelating_datum'].max()))
+    # Filter de dataset op basis van geselecteerde jaren
+    result_auto_merk_brandstof = result_auto_merk_brandstof[
+        (result_auto_merk_brandstof['toelating_datum'] >= year_range[0]) &
+        (result_auto_merk_brandstof['toelating_datum'] <= year_range[1])]
+    fig = px.bar(result_auto_merk_brandstof, x='Merk', y='aantal_auto', color='brandstof',
+                 category_orders={'brandstof': ['Benzine', 'Diesek', 'Elektriciteit', 'Waterstof']})
+    fig.update_layout(
+        xaxis_title='Auto merk',
+        yaxis_title='Aantal auto',
+    )
+    st.plotly_chart(fig)
+
+fig_col7, fig_col8 = st.columns(2)
+with fig_col7:
+    voorspeel_df = pd.get_dummies(result_auto_brandstof, columns=['brandstof'], prefix='brandstof', drop_first=False)
+    voorspeel_df = voorspeel_df.drop(['brandstof_Benzine', 'brandstof_Diesel', 'brandstof_Waterstof'], axis=1)
+    voorspeel_df = voorspeel_df[voorspeel_df['brandstof_Elektriciteit'] == 1]
+    Y = voorspeel_df['aantal_auto']
+    X = voorspeel_df[['toelating_datum', 'brandstof_Elektriciteit']]
+    X['brandstof_Elektriciteit'] = X['brandstof_Elektriciteit'].apply(lambda x: int(x))
+    X = sm.add_constant(X) # adding a constant
+    model = sm.OLS(Y, X).fit()
+    predictions = model.predict(X)
+    print_model = model.summary()
+    voorspeel_df['predictions'] = predictions
 
 
+    fig = go.Figure()
+    # Voeg een lijn toe voor het aantal auto's
+    fig.add_trace(go.Scatter(x=voorspeel_df['toelating_datum'], y=voorspeel_df['aantal_auto'],
+                             mode='lines+markers', name='Aantal Auto'))
+    # Voeg een lijn toe voor voorspellingen
+    fig.add_trace(go.Scatter(x=voorspeel_df['toelating_datum'], y=voorspeel_df['predictions'],
+                             mode='lines+markers', name='Voorspellingen'))
+    # Opmaak van de plot
+    fig.update_layout(
+        xaxis_title='Jaar',
+        yaxis_title='Aantal Auto / Voorspellingen',
+        title='Lijnplot van Aantal Auto en Voorspellingen',
+    )
+    st.plotly_chart(fig)
 
-#barchart auto brandstof per merk
-
-result_auto_merk_brandstof = auto_brandstof.groupby(['Merk','brandstof', 'toelating_datum']).size().reset_index()
-result_auto_merk_brandstof = result_auto_merk_brandstof.rename(columns={0:'aantal_auto'})
-result_auto_merk_brandstof['toelating_datum'] = result_auto_merk_brandstof['toelating_datum'].astype('int')
-
-#slider
-year_range = st.slider("Selecteer een jaarbereik", 
-                               min_value=result_auto_merk_brandstof['toelating_datum'].min(), 
-                               max_value=result_auto_merk_brandstof['toelating_datum'].max(), 
-                               value=(result_auto_merk_brandstof['toelating_datum'].min(), 
-                                      result_auto_merk_brandstof['toelating_datum'].max()))
-
-# Filter de dataset op basis van geselecteerde jaren
-result_auto_merk_brandstof = result_auto_merk_brandstof[(result_auto_merk_brandstof['toelating_datum'] >= year_range[0]) & 
-                                                        (result_auto_merk_brandstof['toelating_datum'] <= year_range[1])]
-
-fig = px.bar(result_auto_merk_brandstof, x='Merk', y='aantal_auto', color='brandstof',
-             category_orders={'brandstof': ['Benzine', 'Diesek', 'Elektriciteit', 'Waterstof']})
-
-fig.update_layout(
-    xaxis_title='Auto merk',
-    yaxis_title='Aantal auto',
-    title='Brandstofverbruik per auto merk'
-)
-st.plotly_chart(fig)
-
-
-# '''voorspelling'''
-
-voorspeel_df = pd.get_dummies(result_auto_brandstof, columns=['brandstof'], prefix='brandstof', drop_first=False)
-voorspeel_df = voorspeel_df.drop(['brandstof_Benzine' , 'brandstof_Diesel','brandstof_Waterstof'], axis = 1)
-voorspeel_df = voorspeel_df[voorspeel_df['brandstof_Elektriciteit'] == 1]
-
-Y = voorspeel_df['aantal_auto']
-X = voorspeel_df[['toelating_datum', 'brandstof_Elektriciteit']] 
-
-X = sm.add_constant(X) # adding a constant
-model = sm.OLS(Y, X).fit()
-predictions = model.predict(X) 
-print_model = model.summary()
-voorspeel_df['predictions'] = predictions
-
-
-fig = go.Figure()
-
-# Voeg een lijn toe voor het aantal auto's
-fig.add_trace(go.Scatter(x=voorspeel_df['toelating_datum'], y=voorspeel_df['aantal_auto'], 
-                         mode='lines+markers', name='Aantal Auto'))
-
-# Voeg een lijn toe voor voorspellingen
-fig.add_trace(go.Scatter(x=voorspeel_df['toelating_datum'], y=voorspeel_df['predictions'], 
-                         mode='lines+markers', name='Voorspellingen'))
-
-# Opmaak van de plot
-fig.update_layout(
-    xaxis_title='Jaar',
-    yaxis_title='Aantal Auto / Voorspellingen',
-    title='Lijnplot van Aantal Auto en Voorspellingen',
-)
-
-st.plotly_chart(fig)
-
-
-toelating_datum_to_predict = list(range(2024, 2045))  # Jaren 2024 t/m 2044
-
-future_data = pd.DataFrame({'toelating_datum': toelating_datum_to_predict})
-
-future_data['brandstof_Elektriciteit'] = 1
-
-future_data = sm.add_constant(future_data)
-
-predicted_values = model.predict(future_data)
-
-future_df = pd.DataFrame({'Toekomstige_Datum': toelating_datum_to_predict, 'Voorspelde_Aantal_Auto': predicted_values})
-
-
-fig = px.line(future_df, markers = True,
-              x="Toekomstige_Datum", y='Voorspelde_Aantal_Auto', 
-              title='Aantallen elektriciteit auto per jaar')
-fig.update_xaxes(title_text='Jaar')
-fig.update_yaxes(title_text='Voorspelde aantal auto')
-st.plotly_chart(fig)
+with fig_col8:
+    toelating_datum_to_predict = list(range(2024, 2045))  # Jaren 2024 t/m 2044
+    future_data = pd.DataFrame({'toelating_datum': toelating_datum_to_predict})
+    future_data['brandstof_Elektriciteit'] = 1
+    future_data = sm.add_constant(future_data)
+    predicted_values = model.predict(future_data)
+    future_df = pd.DataFrame({'Toekomstige_Datum': toelating_datum_to_predict, 'Voorspelde_Aantal_Auto': predicted_values})
+    fig = px.line(future_df, markers=True,
+                  x="Toekomstige_Datum", y='Voorspelde_Aantal_Auto',
+                  title='Aantallen elektriciteit auto per jaar')
+    fig.update_xaxes(title_text='Jaar')
+    fig.update_yaxes(title_text='Voorspelde aantal auto')
+    st.plotly_chart(fig)
 
