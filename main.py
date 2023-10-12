@@ -149,7 +149,6 @@ metric4.metric(
 # Container 3: Charts
 print(laadpaaldata)
 fig_col1, fig_col2 = st.columns(2)
-df_grouped_day = filtered_data.groupby(pd.Grouper(key='Started', freq='D')).sum()
 with fig_col1:
     st.markdown('### Relatie tussen geladen vermogen en max. geleverd vermogen')
     fig_scat = px.scatter(filtered_data, x='MaxPower', y='TotalEnergy', color='Efficiency')
