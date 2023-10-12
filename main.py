@@ -166,16 +166,19 @@ with fig_col2:
     fig.update_xaxes(range=[0, 100], title='Efficiency')
     st.plotly_chart(fig)
 
-st.markdown('### Relatie tussen de laadtijd en het gemiddelde laadvermogen')
-fig_scat2 = px.scatter(filtered_data, y='Avg-power', x='ChargeTime', color='Efficiency', color_continuous_scale="greens")
-fig_scat2.update_layout(
-    xaxis_title='Tijd aan het laden',
-    yaxis_title='Gemiddeld vermogen in kWh'
-)
-st.plotly_chart(fig_scat2)
-
-PowerKwBox = px.box(openchargemap, y='PowerKW', title='Power KW Distribution')
-st.plotly_chart(PowerKwBox)
+fig_col3, fig_col4 = st.columns(2)
+with fig_col3:
+    st.markdown('### Relatie tussen de laadtijd en het gemiddelde laadvermogen')
+    fig_scat2 = px.scatter(filtered_data, y='Avg-power', x='ChargeTime', color='Efficiency', color_continuous_scale="greens")
+    fig_scat2.update_layout(
+        xaxis_title='Tijd aan het laden',
+        yaxis_title='Gemiddeld vermogen in kWh'
+    )
+    st.plotly_chart(fig_scat2)
+with fig_col4:
+    st.markdown('### Power kW Distribution')
+    PowerKwBox = px.box(openchargemap, y='PowerKW')
+    st.plotly_chart(PowerKwBox)
 
 st.session_state['efficiency'] = avg_eff
 st.session_state['consumption'] = consumption
@@ -203,12 +206,17 @@ auto_brandstof['toelating_datum'] = auto_brandstof['toelating_datum'].dt.strftim
 result_auto_brandstof = auto_brandstof.groupby(['brandstof', 'toelating_datum']).size().reset_index()
 result_auto_brandstof = result_auto_brandstof.rename(columns={0:'aantal_auto'})
 
-st.header('Aantallen auto per brandstof per jaar')
-fig = px.line(result_auto_brandstof, x="toelating_datum", y='aantal_auto', title='Aantallen auto per brandstof per jaar', color='brandstof')
-fig.update_xaxes(title_text='Toelating Datum')
-fig.update_yaxes(title_text='Aantal auto')
-st.plotly_chart(fig)
+fig_col5, fig_col6 = st.columns(2)
 
+with fig_col5:
+    st.markdown("### Aantallen auto's per brandstof per jaar")
+    fig = px.line(result_auto_brandstof, x="toelating_datum", y='aantal_auto', title='Aantallen auto per brandstof per jaar', color='brandstof')
+    fig.update_xaxes(title_text='Toelating Datum')
+    fig.update_yaxes(title_text='Aantal auto')
+    st.plotly_chart(fig)
+
+with fig_col6:
+    st.markdown("### Voorspelling elektrische auto's")
 #barchart auto brandstof per merk
 #komt er nog
 
