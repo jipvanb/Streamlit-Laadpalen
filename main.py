@@ -216,7 +216,7 @@ with fig_col5:
     st.plotly_chart(fig)
 
 with fig_col6:
-    st.markdown("### Voorspelling elektrische auto's")
+    st.markdown("### Automerken vs. type brandstof")
     # barchart auto brandstof per merk
     result_auto_merk_brandstof = auto_brandstof.groupby(['Merk', 'brandstof', 'toelating_datum']).size().reset_index()
     result_auto_merk_brandstof = result_auto_merk_brandstof.rename(columns={0: 'aantal_auto'})
@@ -246,7 +246,7 @@ with fig_col7:
     voorspeel_df = voorspeel_df[voorspeel_df['brandstof_Elektriciteit'] == 1]
     Y = voorspeel_df['aantal_auto']
     X = voorspeel_df[['toelating_datum', 'brandstof_Elektriciteit']]
-    X['brandstof_Elektriciteit'] = X['brandstof_Elektriciteit'].apply(lambda x: int(x))
+    # X['brandstof_Elektriciteit'] = X['brandstof_Elektriciteit'].apply(lambda x: int(x))
     X = sm.add_constant(X) # adding a constant
     model = sm.OLS(Y, X).fit()
     predictions = model.predict(X)
