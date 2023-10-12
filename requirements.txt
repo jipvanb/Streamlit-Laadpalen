@@ -1,10 +1,11 @@
-requests~=2.29.0
-pandas~=2.1.1
+requests
+pandas
 numpy
-plotly~=5.9.0
-matplotlib~=3.7.1
-streamlit~=1.27.2
+plotly
+matplotlib
+streamlit
 ydata_profiling
 streamlit_pandas_profiling
 folium
 streamlit_folium
+statsmodels

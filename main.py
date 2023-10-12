@@ -1,4 +1,5 @@
 import time
+import math
 import streamlit as st
 import requests
 import pandas as pd
@@ -108,6 +109,22 @@ hours_conn, minutes_conn = divmod(connected_time, 60)
 consumption = filtered_data['TotalEnergy'].sum()
 avg_eff = filtered_data['Efficiency'].mean()
 
+# Compute value to kWh or MWh based on the consumption
+def compute_kW(kW):
+    if kW == 0:
+        return f" { 0.0 } MWh"
+    elif kW > 0:
+        if math.floor(math.log10(abs(kW))) >= 3:
+            return f" {round((kW / 1000), 2)} MWh"
+        else:
+            return f" {round(kW, 2)} kWh"
+    else:
+        if math.floor(math.log10(abs(kW))) >= 3:
+            return f" {round((kW / 1000), 2)} MWh"
+        else:
+            return f" {round(kW, 2)} kWh"
+
+
 metric1.metric(
     label='Gem. Laadtijd',
     value=f" {int(hours_charge)} uur {int(minutes_charge)} min",
@@ -123,17 +140,16 @@ metric2.metric(
 metric3.metric(
     label='Gem. Efficientie',
     value=f"{round(avg_eff, 2)} %",
-    delta=round(avg_eff - st.session_state['efficiency'], 2)
+    delta=f"{round(avg_eff - st.session_state['efficiency'], 2)}%"
 )
 metric4.metric(
-    label='Gem. Verbruik (kWh)',
-    value=f" {round(consumption, 2)} kWh",
-    delta=round(consumption - st.session_state['consumption'], 2)
+    label='Totaal Opgeladen',
+    value=compute_kW(consumption),
+    delta=compute_kW((consumption - st.session_state['consumption']))
 )
 # Container 3: Charts
 print(laadpaaldata)
 fig_col1, fig_col2 = st.columns(2)
-df_grouped_day = filtered_data.groupby(pd.Grouper(key='Started', freq='D')).sum()
 with fig_col1:
     st.markdown('### Relatie tussen geladen vermogen en max. geleverd vermogen')
     fig_scat = px.scatter(filtered_data, x='MaxPower', y='TotalEnergy', color='Efficiency')
@@ -150,16 +166,19 @@ with fig_col2:
     fig.update_xaxes(range=[0, 100], title='Efficiency')
     st.plotly_chart(fig)
 
-st.markdown('### Relatie tussen de laadtijd en het gemiddelde laadvermogen')
-fig_scat2 = px.scatter(filtered_data, y='Avg-power', x='ChargeTime', color='Efficiency', color_continuous_scale="greens")
-fig_scat2.update_layout(
-    xaxis_title='Tijd aan het laden',
-    yaxis_title='Gemiddeld vermogen in kWh'
-)
-st.plotly_chart(fig_scat2)
-
-PowerKwBox = px.box(openchargemap, y='PowerKW', title='Power KW Distribution')
-st.plotly_chart(PowerKwBox)
+fig_col3, fig_col4 = st.columns(2)
+with fig_col3:
+    st.markdown('### Relatie tussen de laadtijd en het gemiddelde laadvermogen')
+    fig_scat2 = px.scatter(filtered_data, y='Avg-power', x='ChargeTime', color='Efficiency', color_continuous_scale="greens")
+    fig_scat2.update_layout(
+        xaxis_title='Tijd aan het laden',
+        yaxis_title='Gemiddeld vermogen in kWh'
+    )
+    st.plotly_chart(fig_scat2)
+with fig_col4:
+    st.markdown('### Power kW Distribution')
+    PowerKwBox = px.box(openchargemap, y='PowerKW')
+    st.plotly_chart(PowerKwBox)
 
 st.session_state['efficiency'] = avg_eff
 st.session_state['consumption'] = consumption
@@ -167,7 +186,7 @@ st.session_state['charge_hours'] = hours_charge
 st.session_state['charge_minutes'] = minutes_charge
 st.session_state['conn_hours'] = hours_conn
 st.session_state['conn_minutes'] = minutes_conn
- 
+
 auto_brandstof = pd.read_csv("auto_brandstof.csv")
 
 auto_brandstof = auto_brandstof.rename(columns={'Datum eerste toelating DT': 'toelating_datum',
@@ -187,13 +206,22 @@ auto_brandstof['toelating_datum'] = auto_brandstof['toelating_datum'].dt.strftim
 result_auto_brandstof = auto_brandstof.groupby(['brandstof', 'toelating_datum']).size().reset_index()
 result_auto_brandstof = result_auto_brandstof.rename(columns={0:'aantal_auto'})
 
-st.header('Aantallen auto per brandstof per jaar')
-fig = px.line(result_auto_brandstof, x="toelating_datum", y='aantal_auto', title='Aantallen auto per brandstof per jaar', color='brandstof')
-fig.update_xaxes(title_text='Toelating Datum')
-fig.update_yaxes(title_text='Aantal auto')
-st.plotly_chart(fig)
+fig_col5, fig_col6 = st.columns(2)
+
+with fig_col5:
+    st.markdown("### Aantallen auto's per brandstof per jaar")
+    fig = px.line(result_auto_brandstof, x="toelating_datum", y='aantal_auto', title='Aantallen auto per brandstof per jaar', color='brandstof')
+    fig.update_xaxes(title_text='Toelating Datum')
+    fig.update_yaxes(title_text='Aantal auto')
+    st.plotly_chart(fig)
+
+with fig_col6:
+    st.markdown("### Voorspelling elektrische auto's")
+
+
 
 #barchart auto brandstof per merk
+
 result_auto_merk_brandstof = auto_brandstof.groupby(['Merk','brandstof', 'toelating_datum']).size().reset_index()
 result_auto_merk_brandstof = result_auto_merk_brandstof.rename(columns={0:'aantal_auto'})
 result_auto_merk_brandstof['toelating_datum'] = result_auto_merk_brandstof['toelating_datum'].astype('int')
@@ -275,3 +303,4 @@ fig = px.line(future_df, markers = True,
 fig.update_xaxes(title_text='Jaar')
 fig.update_yaxes(title_text='Voorspelde aantal auto')
 st.plotly_chart(fig)
+
