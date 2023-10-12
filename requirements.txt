@@ -8,3 +8,4 @@ ydata_profiling
 streamlit_pandas_profiling
 folium
 streamlit_folium
+statsmodels
